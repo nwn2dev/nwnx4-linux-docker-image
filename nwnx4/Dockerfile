@@ -1,24 +1,15 @@
-FROM debian:bullseye
+FROM i386/debian:bookworm
 
 # Install requirements
-RUN dpkg --add-architecture i386 \
-    && apt-get update \
+RUN apt-get update \
+    && apt-get install -y curl unzip \
     && apt-get install -y gosu wget cabextract xvfb openssl \
     && apt-get install -y gnupg2 software-properties-common \
-    \
-    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | apt-key add - \
-    && apt-add-repository https://dl.winehq.org/wine-builds/debian/ \
-    && apt-get update \
-    && apt-get install -y --install-recommends winehq-stable \
+    && apt-get install -y wine wine32 libwine fonts-wine \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
-    \
-    && apt-get install -y curl unzip \
-    \
     && apt-get clean \
-    && apt-get autoclean \
-    && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 ARG NWNX4_USER_HOME="/home/nwnx4"
@@ -34,9 +25,9 @@ RUN mkdir -p /etc/nwnx4/plugins \
 USER nwnx4:nwnx4
 
 # Setup Wine/Xvfb
-ENV WINEPREFIX="$NWNX4_USER_HOME/.wine32"
 ENV WINEARCH="win32"
-ENV WINEDLLOVERRIDES="mshtml=;devenum,dxdiagn,granny2=n"
+ENV WINEPREFIX="$NWNX4_USER_HOME/.wine32"
+ENV WINEDLLOVERRIDES="devenum,dxdiagn,granny2,mss32=n;ole32,oleaut32,rpcrt4=b"
 ENV WINEDEBUG="fixme-all"
 ENV WINE_NO_AUDIO=1
 ENV AUDIODRIVER="none"
@@ -44,14 +35,13 @@ ENV DISPLAY=":0"
 
 RUN ln -s /srv/nwn2-home "$NWNX4_USER_HOME/Neverwinter Nights 2" \
     && mkdir -p "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2" \
-    && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2/LOGS.0" \
-    \
-    && wineboot --init \
-    && xvfb-run winetricks -q dotnet48 vcrun2005 vcrun2015 \
-    \
-    && rm -rf /tmp/wine*
+    && ln -s /srv/nwn2-logs "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2/LOGS.0"
 
 VOLUME ["/srv/nwn2-logs"]
+
+RUN wineboot --init \
+    && xvfb-run winetricks -q dotnet462 vcrun2005 vcrun2015 \
+    && rm -rf /tmp/wine*
 
 # Setup NWN2 stage and registry overrides
 COPY --chown=nwnx4:nwnx4 nwn2-stage /opt/nwn2-stage
@@ -59,6 +49,7 @@ COPY --chown=nwnx4:nwnx4 nwn2.reg /opt/
 
 # Add temp. folder for X11
 RUN mkdir -p /tmp/.X11-unix \
+    && chown root:root /tmp/.X11-unix \
     && chmod 1777 /tmp/.X11-unix
 
 # Fix to ALSA configuration
