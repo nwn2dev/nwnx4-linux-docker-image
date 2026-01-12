@@ -1,15 +1,28 @@
-FROM i386/debian:bookworm
+FROM debian:trixie
+
+# Add temp. folder for X11
+RUN mkdir -p /tmp/.X11-unix \
+    && chmod 1777 /tmp/.X11-unix
 
 # Install requirements
-RUN apt-get update \
-    && apt-get install -y curl unzip \
-    && apt-get install -y gosu wget cabextract xvfb openssl \
-    && apt-get install -y gnupg2 software-properties-common \
-    && apt-get install -y wine wine32 libwine fonts-wine \
+RUN dpkg --add-architecture i386 \
+    && apt-get update \
+    && apt-get install -y gosu wget unzip cabextract xvfb openssl gnupg2 ca-certificates \
+    \
+    && mkdir -pm755 /etc/apt/keyrings \
+    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
+    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources \
+    && apt-get update \
+    && apt-get install -y --install-recommends winehq-stable \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
+    \
+    && apt-get install -y curl unzip \
+    \
     && apt-get clean \
+    && apt-get autoclean \
+    && apt-get autoremove \
     && rm -rf /var/lib/apt/lists/*
 
 ARG NWNX4_USER_HOME="/home/nwnx4"
@@ -27,8 +40,6 @@ USER nwnx4:nwnx4
 # Setup Wine/Xvfb
 ENV WINEARCH="win32"
 ENV WINEPREFIX="$NWNX4_USER_HOME/.wine32"
-ENV WINEDLLOVERRIDES="devenum,dxdiagn,granny2,mss32=n;ole32,oleaut32,rpcrt4=b"
-ENV WINEDEBUG="fixme-all"
 ENV WINE_NO_AUDIO=1
 ENV AUDIODRIVER="none"
 ENV DISPLAY=":0"
@@ -40,17 +51,13 @@ RUN ln -s /srv/nwn2-home "$NWNX4_USER_HOME/Neverwinter Nights 2" \
 VOLUME ["/srv/nwn2-logs"]
 
 RUN wineboot --init \
-    && xvfb-run winetricks -q dotnet462 vcrun2005 vcrun2015 \
+    && winecfg \
+    && xvfb-run winetricks -q vcrun2005 vcrun2015 dotnet48 \
     && rm -rf /tmp/wine*
 
 # Setup NWN2 stage and registry overrides
 COPY --chown=nwnx4:nwnx4 nwn2-stage /opt/nwn2-stage
 COPY --chown=nwnx4:nwnx4 nwn2.reg /opt/
-
-# Add temp. folder for X11
-RUN mkdir -p /tmp/.X11-unix \
-    && chown root:root /tmp/.X11-unix \
-    && chmod 1777 /tmp/.X11-unix
 
 # Fix to ALSA configuration
 COPY --chown=nwnx4:nwnx4 .asoundrc $NWNX4_USER_HOME
@@ -64,9 +71,11 @@ USER root
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
 
 # Setup release
-RUN curl -LJO $RELEASE_URL \
+RUN wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
+
+ENV WINEDEBUG="-all"
 
 WORKDIR /srv/nwnx4-user
 COPY --chmod=+x docker-entrypoint.sh /
