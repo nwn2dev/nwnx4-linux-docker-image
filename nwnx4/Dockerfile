@@ -75,7 +75,7 @@ RUN wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
 
-ENV WINEDEBUG="-all"
+ENV WINEDEBUG="fixme-all"
 
 WORKDIR /srv/nwnx4-user
 COPY --chmod=+x docker-entrypoint.sh /
