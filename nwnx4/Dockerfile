@@ -1,25 +1,22 @@
-FROM debian:trixie
+FROM debian:bullseye
 
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
-    && apt-get install -y gosu wget unzip cabextract xvfb openssl gnupg2 ca-certificates \
+    && apt-get install -y gosu cabextract xvfb openssl gnupg2 ca-certificates software-properties-common \
+    && apt-get install -y wget curl unzip \
     \
-    && mkdir -pm755 /etc/apt/keyrings \
-    && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
-    && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources \
+    && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | apt-key add - \
+    && apt-add-repository https://dl.winehq.org/wine-builds/debian/ \
     && apt-get update \
-    && apt-cache madison wine* \
     && apt-get install -y \
-        wine-stable=8.0.2~trixie-1 \
-        wine-stable-amd64=8.0.2~trixie-1 \
-        wine-stable-i386=8.0.2~trixie-1 \
-        winehq-stable=8.0.2~trixie-1 \
+        wine-stable=7.0.2~bullseye-1 \
+        wine-stable-amd64=7.0.2~bullseye-1 \
+        wine-stable-i386=7.0.2~bullseye-1 \
+        winehq-stable=7.0.2~bullseye-1 \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
-    \
-    && apt-get install -y curl unzip \
     \
     && apt-get clean \
     && apt-get autoclean \
