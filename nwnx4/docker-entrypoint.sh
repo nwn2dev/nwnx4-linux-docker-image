@@ -2,6 +2,8 @@
 
 set -euxo pipefail
 
+ulimit -s unlimited
+
 # If the NWN2 stage file does not exist in NWN2 install directory, drop
 for file in $(ls /opt/nwn2-stage); do
   if [[ ! -e "/srv/nwn2/$file" ]]; then

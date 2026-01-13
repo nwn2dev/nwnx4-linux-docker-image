@@ -1,9 +1,5 @@
 FROM debian:trixie
 
-# Add temp. folder for X11
-RUN mkdir -p /tmp/.X11-unix \
-    && chmod 1777 /tmp/.X11-unix
-
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
@@ -13,7 +9,12 @@ RUN dpkg --add-architecture i386 \
     && wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key \
     && wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/debian/dists/trixie/winehq-trixie.sources \
     && apt-get update \
-    && apt-get install -y --install-recommends winehq-stable \
+    && apt-cache madison wine* \
+    && apt-get install -y \
+        wine-stable=8.0.2~trixie-1 \
+        wine-stable-amd64=8.0.2~trixie-1 \
+        wine-stable-i386=8.0.2~trixie-1 \
+        winehq-stable=8.0.2~trixie-1 \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
@@ -52,7 +53,7 @@ VOLUME ["/srv/nwn2-logs"]
 
 RUN wineboot --init \
     && winecfg \
-    && xvfb-run winetricks -q vcrun2005 vcrun2015 dotnet48 \
+    && xvfb-run winetricks -q winxp d3dx9 dxdiag vcrun2005 vcrun2015 dotnet48 \
     && rm -rf /tmp/wine*
 
 # Setup NWN2 stage and registry overrides
@@ -65,18 +66,22 @@ COPY --chown=nwnx4:nwnx4 .asoundrc $NWNX4_USER_HOME
 # Expose UDP port 5121 for port access to NWN2 server
 EXPOSE 5121/udp
 
-# Setup entrypoint and command
 USER root
 
+# Setup release
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
 
-# Setup release
 RUN wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
 
+# Add temp. folder for X11
+RUN mkdir -p /tmp/.X11-unix \
+    && chmod 1777 /tmp/.X11-unix
+
 ENV WINEDEBUG="fixme-all"
 
+# Setup entrypoint and command
 WORKDIR /srv/nwnx4-user
 COPY --chmod=+x docker-entrypoint.sh /
 ENTRYPOINT ["/docker-entrypoint.sh"]
