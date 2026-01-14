@@ -1,7 +1,7 @@
 Windows Registry Editor Version 5.00
 
 [HKLM\SOFTWARE\Obsidian\NWN 2\Neverwinter]
-"Location"="/opt/nwn2-stage"
+"Location"="Z:\\opt\\nwn2-stage"
 
 [HKCU\Software\Wine\Audio]
 "Drivers"="none"

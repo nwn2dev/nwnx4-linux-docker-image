@@ -28,4 +28,4 @@ RUN rm -fr /opt/nwnx4 \
 
 RUN apt-get update && apt-get install -y file
 
-ENV WINEDEBUG=+loaddll
+ENV WINEDEBUG=-all
