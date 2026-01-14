@@ -1,5 +1,5 @@
 # Stable image
-FROM nwn2dev/nwnx4:v1.3.1
+FROM nwn2dev/nwnx4:v1.3.1-stable
 
 ARG NWNX4_USER_HOME="/home/nwnx4"
 
@@ -12,9 +12,6 @@ COPY --chown=nwnx4:nwnx4 .asoundrc $NWNX4_USER_HOME
 
 USER root
 
-# Fixes _XSERVTransmkdir: Owner of /tmp/.X11-unix should be set to root
-RUN chown root -R /tmp/.X11-unix
-
 # Copy docker-entrypoint.sh
 COPY --chmod=+x docker-entrypoint.sh /
 
@@ -25,7 +22,3 @@ RUN rm -fr /opt/nwnx4 \
     && wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
-
-RUN apt-get update && apt-get install -y file
-
-ENV WINEDEBUG=-all
