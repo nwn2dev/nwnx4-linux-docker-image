@@ -1,10 +1,7 @@
 Windows Registry Editor Version 5.00
 
 [HKLM\SOFTWARE\Obsidian\NWN 2\Neverwinter]
-"Location"="Z:\\opt\\nwn2-stage"
-
-[HKCU\Software\Wine]
-"StackSize"="8388608"
+"Location"="/opt/nwn2-stage"
 
 [HKCU\Software\Wine\Audio]
 "Drivers"="none"
