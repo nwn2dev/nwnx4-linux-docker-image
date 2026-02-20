@@ -16,8 +16,9 @@ for file in $(ls /srv/nwnx4-user); do
   fi
 done
 
-# Copy plugins from NWNX4 user directory to NWNX4 install directory
-rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /srv/nwnx4-user/plugins/*.dll /opt/nwnx4/plugins/
+# Copy plugins from NWNX4 user and install directories
+rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /srv/nwnx4-user/plugins/*.dll /etc/nwnx4/plugins/
+rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /opt/nwnx4/plugins/*.dll /etc/nwnx4/plugins/
 
 # Wine doesn't support NCrypt well; building it here through openssl
 CERTIFICATE_PATH="/srv/nwnx4-user/NWNCertificate"

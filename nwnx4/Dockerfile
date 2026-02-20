@@ -73,23 +73,22 @@ VOLUME "/srv/nwn2-logs"
 
 USER root
 
-# Copy docker-entrypoint.sh
-COPY --chmod=+x docker-entrypoint.sh /
+RUN mkdir -p /etc/nwnx4/plugins \
+    && chown -R nwnx4:nwnx4 /etc/nwnx4
 
 # Setup release
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
 
-RUN rm -fr /opt/nwnx4 \
-    && wget $RELEASE_URL -O nwnx4.zip \
+RUN wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
     && chown -R nwnx4:nwnx4 /opt/nwnx4
 
-# Default NWN2 server port
 EXPOSE 5121/udp
 
-WORKDIR /opt/nwnx4
 COPY --chmod=+x docker-entrypoint.sh /
+
+WORKDIR /srv/nwnx4-user
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["wine", "NWNX4_Controller.exe", "-interactive", "-verbose"]
+CMD ["wine", "/opt/nwnx4/NWNX4_Controller.exe", "-interactive", "-verbose"]
 
 ENV WINEDLLOVERRIDES="${WINEDLLOVERRIDES};granny2,mss32=n"
