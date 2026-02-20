@@ -8,4 +8,11 @@ services:
       - "${NWN2_INSTALL_DIR}:/srv/nwn2:ro"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
+      - "5120-5130:5120-5130/udp"
+      - "5120:5120/tcp"
+      - "27900:27900/udp"
+      - "6500:6500/udp"
+      - "6667:6667/tcp"
+      - "28900:28900/tcp"
+      - "13139:13139/udp"
     tty: true
