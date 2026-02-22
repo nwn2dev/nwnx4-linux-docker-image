@@ -3,13 +3,9 @@ services:
     container_name: nwnx4
     image: nwn2dev/nwnx4:latest
     volumes:
-      - "$NWNX4_USER_DIR:/srv/nwnx4-user"
       - "$NWN2_INSTALL_DIR:/srv/nwn2:ro"
-      - "$NWN2_HOME_DIR:/home/nwnx4/.wine32/drive_c/users/nwnx4/Documents/Neverwinter Nights 2"
-      - "nwn2stage:/opt/nwn2-stage"
+      - "$NWN2_HOME_DIR:/home/nwnx4/nwn2"
+      - "$NWNX4_USER_DIR:/srv/nwnx4-user"
     ports:
       - "${SERVER_PORT:-5121}:5121/udp"
     tty: true
-
-volumes:
-  nwn2stage:

@@ -2,26 +2,44 @@
 
 set -euxo pipefail
 
-# Sync NWN2 install directory to NWN2 stage directory
-if [[ ! -e "/opt/nwn2-stage/.nwn2-staged" ]]; then
-  rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /srv/nwn2/ /opt/nwn2-stage/
-  rm -rf /opt/nwn2-stage/Miles
-  touch /opt/nwn2-stage/.nwn2-staged
-fi
+sync_folder() {
+  local src="$1"
+  local dst="$2"
 
-# Create NWNX4 user directory symlinks to NWNX4 install directory
-for file in $(ls /srv/nwnx4-user); do
-  if [[ ! -e "/opt/nwnx4/$file" ]]; then
-    ln -s "/srv/nwnx4-user/$file" /opt/nwnx4/ && chown nwnx4:nwnx4 -h "/opt/nwnx4/$file"
-  fi
-done
+  mkdir -p "$dst"
 
-# Copy plugins from NWNX4 user and install directories
-rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /srv/nwnx4-user/plugins/*.dll /etc/nwnx4/plugins/
-rsync -avz --chown=nwnx4:nwnx4 --ignore-existing /opt/nwnx4/plugins/*.dll /etc/nwnx4/plugins/
+  for item in "$src"/*; do
+    [ -e "$item" ] || continue
+
+    local name
+    name=$(basename "$item")
+
+    # Ignore existing files
+    if [ -e "$dst/$name" ]; then
+      continue
+    fi
+
+    # If root .dll or .exe file, copy
+    if [[ -f "$item" && ( "$name" == *.dll || "$name" == *.exe ) ]]; then
+      cp -an "$item" "$dst/$name"
+    else
+      ln -s "$item" "$dst/$name"
+    fi
+  done
+
+  chown nwnx4:nwnx4 -R "$dst"
+}
+
+sync_folder /srv/nwn2 /opt/nwn2
+rm -rf /opt/nwn2/Miles
+sync_folder /home/nwnx4/nwn2 "$WINEPREFIX/drive_c/users/nwnx4/Documents/Neverwinter Nights 2"
+sync_folder /srv/nwnx4-user /opt/nwnx4-user
+sync_folder /opt/nwnx4/plugins /opt/nwnx4-user/plugins
+
+cd /opt/nwnx4-user
 
 # Wine doesn't support NCrypt well; building it here through openssl
-CERTIFICATE_PATH="/srv/nwnx4-user/NWNCertificate"
+CERTIFICATE_PATH="/opt/nwnx4-user/NWNCertificate"
 HOSTNAME="CN=Neverwinter Nights"
 ALGORITHM="sha384"
 
@@ -48,10 +66,6 @@ if [ ! -e "${CERTIFICATE_PATH}.pfx" ]; then
   rm "${CERTIFICATE_PATH}.csr"
   rm "${CERTIFICATE_PATH}.crt"
 fi
-
-# All files in the /srv/nwnx4-user and /srv/nwn2-logs folder must be owned by the nwnx4 user
-chown -R nwnx4:nwnx4 /srv/nwnx4-user
-chown -R nwnx4:nwnx4 /srv/nwn2-logs
 
 gosu nwnx4 bash <<-EOF
   Xvfb $DISPLAY &
