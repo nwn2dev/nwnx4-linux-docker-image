@@ -7,7 +7,7 @@ RUN echo "* soft stack unlimited" >> /etc/security/limits.conf \
 # Install requirements
 RUN dpkg --add-architecture i386 \
     && apt-get update \
-    && apt-get install -y gosu wget rsync cabextract xvfb openssl \
+    && apt-get install -y gosu wget curl unzip cabextract xvfb openssl \
     && apt-get install -y gnupg2 software-properties-common \
     \
     && wget -qO- https://dl.winehq.org/wine-builds/winehq.key | apt-key add - \
@@ -17,8 +17,6 @@ RUN dpkg --add-architecture i386 \
     \
     && wget https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks -O /usr/local/bin/winetricks \
     && chmod +x /usr/local/bin/winetricks \
-    \
-    && apt-get install -y curl unzip \
     \
     && apt-get clean \
     && apt-get autoclean \
@@ -65,16 +63,18 @@ COPY --chown=nwnx4:nwnx4 nwn2.reg /opt/
 # Fix to ALSA configuration
 COPY --chown=nwnx4:nwnx4 .asoundrc $NWNX4_USER_HOME
 
-USER nwnx4:nwnx4
-
-RUN mkdir -p "$WINEPREFIX/drive_c/users/nwnx4/Temp/NWN2"
-
-VOLUME /var/log/nwn2
+# USER nwnx4:nwnx4
 
 USER root
 
-RUN mkdir -p /opt/nwnx4-user/plugins \
-    && chown nwnx4:nwnx4 -R /opt/nwnx4-user
+RUN mkdir -p /var/log/nwn2 "$WINEPREFIX/drive_c/users/nwnx4/AppData/Local/Temp" \
+    && ln -s /var/log/nwn2 "$WINEPREFIX/drive_c/users/nwnx4/AppData/Local/Temp/NWN2" \
+    && chown nwnx4:nwnx4 -R /var/log/nwn2 "$WINEPREFIX/drive_c/users/nwnx4/AppData/Local/Temp/NWN2"
+
+VOLUME /var/log/nwn2
+
+RUN mkdir -p /etc/nwnx4/plugins \
+    && chown nwnx4:nwnx4 -R /etc/nwnx4/plugins
 
 # Setup release
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"

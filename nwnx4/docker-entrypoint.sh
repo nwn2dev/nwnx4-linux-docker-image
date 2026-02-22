@@ -33,13 +33,11 @@ sync_folder() {
 sync_folder /srv/nwn2 /opt/nwn2
 rm -rf /opt/nwn2/Miles
 sync_folder /home/nwnx4/nwn2 "$WINEPREFIX/drive_c/users/nwnx4/Documents/Neverwinter Nights 2"
-sync_folder /srv/nwnx4-user /opt/nwnx4-user
-sync_folder /opt/nwnx4/plugins /opt/nwnx4-user/plugins
-
-cd /opt/nwnx4-user
+sync_folder /srv/nwnx4-user/plugins /etc/nwnx4/plugins
+sync_folder /opt/nwnx4/plugins /etc/nwnx4/plugins
 
 # Wine doesn't support NCrypt well; building it here through openssl
-CERTIFICATE_PATH="/opt/nwnx4-user/NWNCertificate"
+CERTIFICATE_PATH="/srv/nwnx4-user/NWNCertificate"
 HOSTNAME="CN=Neverwinter Nights"
 ALGORITHM="sha384"
 
