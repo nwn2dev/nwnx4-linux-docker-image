@@ -65,6 +65,8 @@ if [ ! -e "${CERTIFICATE_PATH}.pfx" ]; then
   rm "${CERTIFICATE_PATH}.crt"
 fi
 
+chown nwnx4:nwnx4 -R /srv/nwnx4-user
+
 gosu nwnx4 bash <<-EOF
   Xvfb $DISPLAY &
   wine reg import /opt/nwn2.reg
