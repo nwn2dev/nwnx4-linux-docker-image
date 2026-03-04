@@ -77,7 +77,10 @@ RUN mkdir -p /etc/nwnx4/plugins \
     && chown nwnx4:nwnx4 -R /etc/nwnx4/plugins
 
 # Setup release
-ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
+ARG VERSION=latest
+ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/download/$VERSION/nwnx4.zip"
+
+ENV NWNX4_VERSION=$VERSION
 
 RUN wget $RELEASE_URL -O nwnx4.zip \
     && unzip nwnx4.zip -d /opt \
