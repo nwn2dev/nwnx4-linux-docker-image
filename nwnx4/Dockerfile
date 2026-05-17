@@ -79,6 +79,7 @@ RUN mkdir -p /etc/nwnx4/plugins \
 # Setup release
 ARG VERSION=latest
 ARG RELEASE_URL="https://github.com/nwn2dev/nwnx4/releases/latest/download/nwnx4.zip"
+
 ENV NWNX4_VERSION=$VERSION
 
 RUN if [ "$VERSION" != "latest" ]; then \
